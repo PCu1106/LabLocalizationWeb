@@ -1,0 +1,15 @@
+<form class="formNewsLetter" action="/process" method="POST">
+    <div class="formContainer">
+        <h2>try type some!</h2>
+        <input type="hidden" name="_csrf" value=".{.{ csrf }.}." />
+        <ul>
+            <li>
+                <label> Name: <input type="text" name="name" /> </label>
+            </li>
+            <li>
+                <label> Email: <input type="text" name="email" /> </label>
+            </li>
+        </ul>
+        <input type="submit" value="submit" />
+    </div>
+</form>
