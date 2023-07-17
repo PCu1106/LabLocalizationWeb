@@ -25,6 +25,13 @@ html {
     opacity: 0.9;
 }
 
+.header .logo{
+    font-size: 22px;
+    font-weight: normal;
+    color: white;
+    padding-left: 6px;
+}
+
 .header_selectbar {
     display: inline-block;
     position: relative;

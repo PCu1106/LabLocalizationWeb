@@ -176,12 +176,14 @@ setInterval(() => {
   if (type == 0) {
     servIo.emit('counter', rssi_result);//用RSSI結果來當最終結果
     servIo.emit('rssi_result', rssi_result);
+    servIo.emit('realtime_rssi', buffer);
     servIo.emit('last_10', queue);
   }
   else {
     //console.log(pos);
     servIo.emit('counter', pos);            //影像的預測位置
     servIo.emit('rssi_result', rssi_result);//RSSI的預測位置
+    servIo.emit('realtime_rssi', buffer);
     servIo.emit('prob_list', prob);         //for 影像的機率分布
     servIo.emit('last_10', queue);          //RSSI最近10次position
   }
