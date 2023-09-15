@@ -84,57 +84,57 @@
             $('#circle').css("left", val1 + '%');
             $('#circle').css("top", val2 + '%');
         });
-        socket.on('realtime_rssi', (buffer) => {
-            $('#realtime_rssi').html('Real_time_RSSI:<br>beacon1: ' + buffer[0] + '<br>beacon2: ' + buffer[1] + '<br>beacon3: ' + buffer[2] + '<br>beacon4: ' + buffer[3] + '<br>beacon5: ' + buffer[4] + '<br>beacon7: ' + buffer[5]);
+        socket.on('realtime_rssi', (prob) => {
+            $('#realtime_rssi').html('Real_time_RSSI:<br>beacon1: ' + prob[0] + '<br>beacon2: ' + prob[1] + '<br>beacon3: ' + prob[2] + '<br>beacon4: ' + prob[3] + '<br>beacon5: ' + prob[4] + '<br>beacon7: ' + prob[5]);
         });
-        socket.on('prob_list', (prob) => {
+        // socket.on('prob_list', (prob) => {
 
-            points.forEach((point) => point.remove());
-            points = [];
-            for (let i = 0; i < 10; i++) {
+        //     points.forEach((point) => point.remove());
+        //     points = [];
+        //     for (let i = 0; i < 10; i++) {
 
-                const point = document.createElement('div');
-                point.className = 'point';
-                const { val1, val2 } = pos_to_html(prob[i]);
+        //         const point = document.createElement('div');
+        //         point.className = 'point';
+        //         const { val1, val2 } = pos_to_html(prob[i]);
 
-                //val1 = Math.random() * container.clientWidth
-                //val1 = val1 + 2 * Math.random();
-                L = val1 + 2 * Math.random();
-                T = val2 + 2 * Math.random();
-                // val2 = val2 + 2 * Math.random();
-                point.style.left = L + '%';
-                point.style.top = T + '%';
-                if (point_opacity == 1)
-                    point.style.opacity = 1;
-                else point.style.opacity = 0;
-                container.appendChild(point);
-                points.push(point);
+        //         //val1 = Math.random() * container.clientWidth
+        //         //val1 = val1 + 2 * Math.random();
+        //         L = val1 + 2 * Math.random();
+        //         T = val2 + 2 * Math.random();
+        //         // val2 = val2 + 2 * Math.random();
+        //         point.style.left = L + '%';
+        //         point.style.top = T + '%';
+        //         if (point_opacity == 1)
+        //             point.style.opacity = 1;
+        //         else point.style.opacity = 0;
+        //         container.appendChild(point);
+        //         points.push(point);
 
-            }
-        });
-        socket.on('last_10', (queue) => {
+        //     }
+        // });
+        // socket.on('last_10', (queue) => {
 
-            ten_points.forEach((p) => p.remove());
-            ten_points = [];
-            for (let i = 0; i < queue.length; i++) {
+        //     ten_points.forEach((p) => p.remove());
+        //     ten_points = [];
+        //     for (let i = 0; i < queue.length; i++) {
 
-                const p = document.createElement('div');
-                p.className = 'blue_point';
-                const { val1, val2 } = pos_to_html(queue[i]);
+        //         const p = document.createElement('div');
+        //         p.className = 'blue_point';
+        //         const { val1, val2 } = pos_to_html(queue[i]);
 
-                L = val1 + 2 * Math.random();
-                T = val2 + 2 * Math.random();
+        //         L = val1 + 2 * Math.random();
+        //         T = val2 + 2 * Math.random();
 
-                p.style.left = L + '%';
-                p.style.top = T + '%';
-                if (ten_point_opacity == 1)
-                    p.style.opacity = 1;
-                else p.style.opacity = 0;
-                container.appendChild(p);
-                ten_points.push(p);
+        //         p.style.left = L + '%';
+        //         p.style.top = T + '%';
+        //         if (ten_point_opacity == 1)
+        //             p.style.opacity = 1;
+        //         else p.style.opacity = 0;
+        //         container.appendChild(p);
+        //         ten_points.push(p);
 
-            }
-        });
+        //     }
+        // });
         $('#show_circle').click(function () {
             $('#circle').fadeToggle();
         });
@@ -156,6 +156,20 @@
         }, function () {
             $("#choose_type").css("opacity", "0");
         });
+
+
+
+        ///////////////New
+        $("#chose_data_input").hover(function () {
+            $("#choose_data").css("opacity", "1");
+        }, function () {
+            $("#choose_data").css("opacity", "0");
+        });
+
+
+
+
+
         $('#show_Prob').click(function () {
             if (point_opacity == 0)
                 point_opacity = 1;
@@ -176,6 +190,24 @@
             image.attr("src", "images/user2.png")
             $('#now_user').text('當前:哲均');
         });
+
+        /////////////////////////////////////New
+        $('#realtime').click(function () {
+            $.get("/change_data_input", { type: "realtime", value: 1 }, function (response) {
+                //
+            });
+            $('#datainput').text('Real Time');
+        });
+        $('#simulation').click(function () {
+            $.get("/change_data_input", { type: "simulation", value: 0 }, function (response) {
+                //
+            });
+            $('#datainput').text('Simulation');
+        });
+
+
+
+
         $('#type1').click(function () {
             $.get("/change_type", { type: "RSSI", value: 0 }, function (response) {
                 //
@@ -274,6 +306,21 @@
 
                         </ul>
                     </div>
+                    
+
+
+
+                    <div id="chose_data_input" class="header_select_item more">
+                        <a class="header_select_item" id="datainput">資料輸入</a>
+                        <ul id="choose_data" class="header_select_sublist">
+                            <li><a href='#' id="realtime" class="header_select_sublist_option">Real Time</a></li>
+                            <li><a href='#' id="simulation" class="header_select_sublist_option">Simulation</a></li>
+                        </ul>
+                    </div>
+
+
+
+
                     <div id="type" class="header_select_item more">
                         <a class="header_select_item" id="way">計算方式</a>
                         <ul id="choose_type" class="header_select_sublist">
@@ -282,6 +329,10 @@
                             <li><a href='#' id="type3" class="header_select_sublist_option">Both</a></li>
                         </ul>
                     </div>
+
+
+
+
                     <div id="particle_weight" class="header_select_item more">
                         <a class="header_select_item" id="p_weight">粒子權重</a>
                         <ul id="choose_particle_weight" class="header_select_sublist">
