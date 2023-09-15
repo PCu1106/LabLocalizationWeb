@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="/socket.io/socket.io.js"></script>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="map.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+    <script src="math.js" type="text/javascript"></script>
+    <script src="map.js"> </script>
+    <title>LAB GUIDE</title>
+    <style>
+        #map {
+            width: 90vw;
+            height: 90vh;
+            top: 5%;
+            left: 10%;
+            position: absolute;
+            z-index: 1;
+            /* top: 200px;
+            left: 300px */
+        }
+
+        #footstep {
+            /* width: 50px;
+            height: 50px; */
+            width: 100px;
+            height: 100px;
+            position: absolute;
+            z-index: 2;
+            /* top: 200px;
+            left: 300px */
+        }
+
+        #realtime_data {
+            position: fixed;
+            top: 10%;
+            left: 0%;
+            width: 12%;
+            height: 80%;
+
+            z-index: 2;
+            /* top: 200px;
+            left: 300px */
+        }
+
+        #circle {
+            position: absolute;
+            width: 66.4vh;
+            height: 66.4vh;
+            border-radius: 50%;
+            border-style: solid;
+            border-width: 3px;
+            background-color: gray;
+            opacity: 0.2;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+        }
+    </style>
+</head>
+<script src='/socket.io/socket.io.js'></script>
+<script src='http://code.jquery.com/jquery-1.8.2.min.js'></script>
+<script>
+    $(document).ready(function () {
+        var socket = io.connect('http://140.116.72.77:4000/');
+
+        let points = [];
+        var point_opacity = 0;
+        let ten_points = [];
+        var ten_point_opacity = 0;
+        const container = document.getElementById("box");
+        socket.on('counter', (counter) => {
+            // 更新HTML元素的值
+            //$('#footstep').css("top", counter);
+            const { val1, val2 } = pos_to_html(counter);
+
+            $('#footstep').css("left", val1 + '%');
+            $('#footstep').css("top", val2 + '%');
+            $('#final_predict').html('Final_Predict: ' + counter);
+        });
+        socket.on('rssi_result', (rssi_result) => {
+            $('#rssi_result').html('RSSI_Result: ' + rssi_result);
+            const { val1, val2 } = pos_to_html(rssi_result);
+            $('#circle').css("left", val1 + '%');
+            $('#circle').css("top", val2 + '%');
+        });
+        socket.on('realtime_rssi', (prob) => {
+            $('#realtime_rssi').html('Real_time_RSSI:<br>beacon1: ' + prob[0] + '<br>beacon2: ' + prob[1] + '<br>beacon3: ' + prob[2] + '<br>beacon4: ' + prob[3] + '<br>beacon5: ' + prob[4] + '<br>beacon7: ' + prob[5]);
+        });
+        // socket.on('prob_list', (prob) => {
+
+        //     points.forEach((point) => point.remove());
+        //     points = [];
+        //     for (let i = 0; i < 10; i++) {
+
+        //         const point = document.createElement('div');
+        //         point.className = 'point';
+        //         const { val1, val2 } = pos_to_html(prob[i]);
+
+        //         //val1 = Math.random() * container.clientWidth
+        //         //val1 = val1 + 2 * Math.random();
+        //         L = val1 + 2 * Math.random();
+        //         T = val2 + 2 * Math.random();
+        //         // val2 = val2 + 2 * Math.random();
+        //         point.style.left = L + '%';
+        //         point.style.top = T + '%';
+        //         if (point_opacity == 1)
+        //             point.style.opacity = 1;
+        //         else point.style.opacity = 0;
+        //         container.appendChild(point);
+        //         points.push(point);
+
+        //     }
+        // });
+        // socket.on('last_10', (queue) => {
+
+        //     ten_points.forEach((p) => p.remove());
+        //     ten_points = [];
+        //     for (let i = 0; i < queue.length; i++) {
+
+        //         const p = document.createElement('div');
+        //         p.className = 'blue_point';
+        //         const { val1, val2 } = pos_to_html(queue[i]);
+
+        //         L = val1 + 2 * Math.random();
+        //         T = val2 + 2 * Math.random();
+
+        //         p.style.left = L + '%';
+        //         p.style.top = T + '%';
+        //         if (ten_point_opacity == 1)
+        //             p.style.opacity = 1;
+        //         else p.style.opacity = 0;
+        //         container.appendChild(p);
+        //         ten_points.push(p);
+
+        //     }
+        // });
+        $('#show_circle').click(function () {
+            $('#circle').fadeToggle();
+        });
+        $('#show_Realtime').click(function () {
+            $('#realtime_data').fadeToggle();
+        });
+        $("#intro").hover(function () {
+            $("#sub").css("opacity", "1");
+        }, function () {
+            $("#sub").css("opacity", "0");
+        });
+        $("#person").hover(function () {
+            $("#choose_user").css("opacity", "1");
+        }, function () {
+            $("#choose_user").css("opacity", "0");
+        });
+        $("#type").hover(function () {
+            $("#choose_type").css("opacity", "1");
+        }, function () {
+            $("#choose_type").css("opacity", "0");
+        });
+
+
+
+        ///////////////New
+        $("#chose_data_input").hover(function () {
+            $("#choose_data").css("opacity", "1");
+        }, function () {
+            $("#choose_data").css("opacity", "0");
+        });
+
+
+
+
+
+        $('#show_Prob').click(function () {
+            if (point_opacity == 0)
+                point_opacity = 1;
+            else point_opacity = 0;
+        });
+        $('#show_10times').click(function () {
+            if (ten_point_opacity == 0)
+                ten_point_opacity = 1;
+            else ten_point_opacity = 0;
+        });
+        $('#user1').click(function () {
+            var image = $("#footstep");
+            image.attr("src", "images/person.jpg")
+            $('#now_user').text('當前:XX');
+        });
+        $('#user2').click(function () {
+            var image = $("#footstep");
+            image.attr("src", "images/user2.png")
+            $('#now_user').text('當前:哲均');
+        });
+
+        /////////////////////////////////////New
+        $('#realtime').click(function () {
+            $.get("/change_data_input", { type: "realtime", value: 1 }, function (response) {
+                //
+            });
+            $('#datainput').text('Real Time');
+        });
+        $('#simulation').click(function () {
+            $.get("/change_data_input", { type: "simulation", value: 0 }, function (response) {
+                //
+            });
+            $('#datainput').text('Simulation');
+        });
+
+
+
+
+        $('#type1').click(function () {
+            $.get("/change_type", { type: "RSSI", value: 0 }, function (response) {
+                //
+            });
+            $('#way').text('純RSSI');
+            points.forEach((point) => point.remove());
+            points = [];
+        });
+        $('#type2').click(function () {
+            $.get("/change_type", { type: "Image", value: 1 }, function (response) {
+                //
+            });
+            $('#way').text('純Image');
+        });
+        $('#type3').click(function () {
+            $.get("/change_type", { type: "both", value: 2 }, function (response) {
+                //
+            });
+            $('#way').text('RSSI+Image');
+        });
+        $("#particle_weight").hover(function () {
+            $("#choose_particle_weight").css("opacity", "1");
+        }, function () {
+            $("#choose_particle_weight").css("opacity", "0");
+        });
+        $('#weight1').click(function () {
+            $.get("/change_particle", { particle: "particle", value: 20000 }, function (response) {
+                //
+            });
+            $('#p_weight').text('粒子數:20000');
+        });
+        $('#weight2').click(function () {
+            $.get("/change_particle", { particle: "particle", value: 30000 }, function (response) {
+                //
+            });
+            $('#p_weight').text('粒子數:30000');
+        });
+        $('#weight3').click(function () {
+            $.get("/change_particle", { particle: "particle", value: 40000 }, function (response) {
+                //
+            });
+            $('#p_weight').text('粒子數:40000');
+        });
+
+
+        $("#data_date").hover(function () {
+            $("#choose_data_date").css("opacity", "1");
+        }, function () {
+            $("#choose_data_date").css("opacity", "0");
+        });
+        $('#date1').click(function () {
+            $.get("/change_data_date", { date: "date", value: '0308' }, function (response) {
+                //
+            });
+            $('#date').text('2023 3/8');
+        });
+        $('#date2').click(function () {
+            $.get("/change_data_date", { date: "date", value: '0408' }, function (response) {
+                //
+            });
+            $('#date').text('2023 4/8');
+        });
+        $('#date3').click(function () {
+            $.get("/change_data_date", { date: "date", value: '0414' }, function (response) {
+                //
+            });
+            $('#date').text('2023 4/14');
+        });
+    });
+</script>
+
+<body>
+    <!-- <button id='send'>send</button>
+    <div id='panel'></div> -->
+    <div id="box">
+        <div class="header">
+            <a href="#" class="logo">MCSLab</a>
+            <div class="header_selectbar">
+                <div class="header_select">
+                    <a href='#' id="show_circle" class="header_select_item">RSSI</a>
+                    <a href='#' id="show_Realtime" class="header_select_item">Realtime_data</a>
+                    <div id="intro" class="header_select_item more">
+                        <a class="header_select_item">分布</a>
+                        <ul id="sub" class="header_select_sublist">
+                            <li><a href='#' id="show_Prob" class="header_select_sublist_option">預測機率分布</a></li>
+                            <li><a href='#' id="show_10times" class="header_select_sublist_option">最近10次位置</a></li>
+
+                        </ul>
+                    </div>
+                    <p class="header_select_item"> | </p>
+                    <div id="person" class="header_select_item more">
+                        <a class="header_select_item" id="now_user">使用者</a>
+                        <ul id="choose_user" class="header_select_sublist">
+                            <li><a href='#' id="user1" class="header_select_sublist_option">user1</a></li>
+                            <li><a href='#' id="user2" class="header_select_sublist_option">user2</a></li>
+
+                        </ul>
+                    </div>
+                    
+
+
+
+                    <div id="chose_data_input" class="header_select_item more">
+                        <a class="header_select_item" id="datainput">資料輸入</a>
+                        <ul id="choose_data" class="header_select_sublist">
+                            <li><a href='#' id="realtime" class="header_select_sublist_option">Real Time</a></li>
+                            <li><a href='#' id="simulation" class="header_select_sublist_option">Simulation</a></li>
+                        </ul>
+                    </div>
+
+
+
+
+                    <div id="type" class="header_select_item more">
+                        <a class="header_select_item" id="way">計算方式</a>
+                        <ul id="choose_type" class="header_select_sublist">
+                            <li><a href='#' id="type1" class="header_select_sublist_option">純RSSI</a></li>
+                            <li><a href='#' id="type2" class="header_select_sublist_option">純Image</a></li>
+                            <li><a href='#' id="type3" class="header_select_sublist_option">Both</a></li>
+                        </ul>
+                    </div>
+
+
+
+
+                    <div id="particle_weight" class="header_select_item more">
+                        <a class="header_select_item" id="p_weight">粒子權重</a>
+                        <ul id="choose_particle_weight" class="header_select_sublist">
+                            <li><a href='#' id="weight1" class="header_select_sublist_option">default</a></li>
+                            <li><a href='#' id="weight2" class="header_select_sublist_option">strong</a></li>
+                            <li><a href='#' id="weight3" class="header_select_sublist_option">max</a></li>
+                        </ul>
+                    </div>
+                    <div id="data_date" class="header_select_item more">
+                        <a class="header_select_item" id="date">資料集日期</a>
+                        <ul id="choose_data_date" class="header_select_sublist">
+                            <li><a href='#' id="date1" class="header_select_sublist_option">2023 3/8</a></li>
+                            <li><a href='#' id="date2" class="header_select_sublist_option">2023 4/8</a></li>
+                            <li><a href='#' id="date3" class="header_select_sublist_option">2023 4/14</a></li>
+                        </ul>
+                    </div>
+                    <!-- <a class="header_select_item">GGGG</a> -->
+                </div>
+            </div>
+        </div>
+
+
+
+        <img id="map" src="images/LABmap2.jpg" />
+        <img id="footstep" src="images/location.png" />
+        <div id="circle" style="display: none;"></div>
+        <!-- <button class="ui button" id="show_circle">顯示RSSI範圍</button> -->
+        <!-- <div id="realtime_data">
+            abc
+        </div> -->
+        <div class="ui segments" id="realtime_data" style="white-space: nowrap; display: none;">
+            <div class="ui segment" id="final_predict">
+                <p>Final_Predict</p>
+            </div>
+            <div class="ui red segment" id="rssi_result">
+                <p>RSSI_Result</p>
+            </div>
+            <div class="ui purple segment" id="realtime_rssi">
+                <p>Realtime_RSSI</p>
+            </div>
+            <div class="ui blue segment" id="rssi_radius">
+                <p>RSSI_Radius: 4</p>
+            </div>
+            <div class="ui green segment">
+                <p>Realtime_Video:</p>
+                <!-- <img src="https://cctv-ss04.thb.gov.tw/T14A-7K+520" style="width: 200px; height: 150px;"> -->
+                <iframe width="200" src="https://www.youtube.com/embed/oIgbl7t0S_w?controls=0&mute=1&autoplay=1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            </div>
+            <!-- <div class="ui yellow segment">
+                <p>Bottom</p>
+            </div> -->
+        </div>
+    </div>
+</body>
+
+</html>
