@@ -15,7 +15,7 @@ function full(Array) {
   }
   return true;
 }
-let buffer = new Array(6);
+let buffer = new Array(7);
 buffer = ['0', '0', '0', '0', '0', '0', '101']; //最後一個是未來會收的ground truth position, 只有ANN_contrast.py會用
 var Beacon_RSSi = '';
 var t = 0;
@@ -31,26 +31,34 @@ var clientHandler = function (socket) {
   socket.on('data', function dataHandler(data) {//data是客戶端傳送給伺服器的資料
     //console.log(data);
     k = data.toString();
-    var K = k.split(",", 2);
-    beacon_id = K[0];
-    Rssi = K[1];
-    let numStr = beacon_id.replace(/[^0-9]/ig, "");
-    beacon_int = parseInt(numStr);
-    Rssi_int = parseInt(Rssi);
-    //console.log(beacon_int,Rssi_int);
-    Rssi_int = (Rssi_int + 103) / (-48 + 103); //min-max normalization
-    if (beacon_int == 7) {
-      buffer[5] = Rssi_int;
-    }//因為用1 2 3 4 5 7
-    else
-      buffer[beacon_int - 1] = Rssi_int;
-    // if(full(buffer)) //full 邏輯是buffer裡全部值都不是0才成立, 所以6個rssi值沒收滿前不會成立
-    if (true) {  
-      Beacon_RSSi = `{q"Beacon_1q":q"${buffer[0]}q",q"Beacon_2q":q"${buffer[1]}q",q"Beacon_3q":q"${buffer[2]}q",q"Beacon_4q":q"${buffer[3]}q",q"Beacon_5q":q"${buffer[4]}q",q"Beacon_7q":q"${buffer[5]}q", q"Ground_truthq":q"${buffer[6]}q"}`;
-      console.log(Beacon_RSSi);
-      buffer = ['0', '0', '0', '0', '0', '0', '101'];
-      count++;
+    //console.log(k)
+    if(!k.includes(",")){
+      console.log(k);
+      buffer[6] = k;
     }
+    else{
+      var K = k.split(",", 2);
+      beacon_id = K[0];
+      Rssi = K[1];
+      let numStr = beacon_id.replace(/[^0-9]/ig, "");
+      beacon_int = parseInt(numStr);
+      Rssi_int = parseInt(Rssi);
+      //console.log(beacon_int,Rssi_int);
+      Rssi_int = (Rssi_int + 103) / (-48 + 103); //min-max normalization
+      if (beacon_int == 7) {
+        buffer[5] = Rssi_int;
+      }//因為用1 2 3 4 5 7
+      else
+        buffer[beacon_int - 1] = Rssi_int;
+      // if(full(buffer)) //full 邏輯是buffer裡全部值都不是0才成立, 所以6個rssi值沒收滿前不會成立
+      if (true) {  
+        Beacon_RSSi = `{q"Beacon_1q":q"${buffer[0]}q",q"Beacon_2q":q"${buffer[1]}q",q"Beacon_3q":q"${buffer[2]}q",q"Beacon_4q":q"${buffer[3]}q",q"Beacon_5q":q"${buffer[4]}q",q"Beacon_7q":q"${buffer[5]}q", q"Ground_truthq":q"${buffer[6]}q"}`;
+        console.log(Beacon_RSSi);
+        buffer = ['0', '0', '0', '0', '0', '0', '000']; //還原等收下一次值，第7個(buffer[6])是groundtruth position
+        count++;
+      }
+    }
+    
     socket.write(toclient);
   });
 
