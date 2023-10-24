@@ -1,3 +1,4 @@
 __pycache__/
 runs/
-traced_model.pt
+traced_model.pt/
+*.h5

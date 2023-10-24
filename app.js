@@ -6,35 +6,92 @@ var Rssi = '0';
 //var filename = 'Hashing_KNN.py'
 // var filename = '/home/mcs/troy2/ANN.py'
 // var filename2 = '/home/mcs/yolov7/realtimeD.py'
-
-
-function full(Array) {
-  for (let i = 0; i < Array.length - 1; i++) {
-    if (Array[i] == '0')
-      return false;
-  }
-  return true;
-}
 let buffer = new Array(7);
-buffer = ['0', '0', '0', '0', '0', '0', '101']; //最後一個是未來會收的ground truth position, 只有ANN_contrast.py會用
+buffer = ['0', '0', '0', '0', '0', '0', '000']; 
 var Beacon_RSSi = '';
 var t = 0;
 var beacon_int = 0
 var Rssi_int = 0;
 var toclient = '0';
 var pos = '608'
+let pythonProcess = null;
+
+
+const fs = require('fs');
+const lockfile = require('lockfile'); //Synchronize control.py 和 app.js rssi_buffer.csv用
+const filePath = 'rssi_buffer.csv';
+const lockFilePath = 'l.lock';
+
+function writeToCsvFile(Beacon_RSSi) {
+  // // Check if the lock file already exists
+  // try {
+  //     if (fs.existsSync(lockFilePath)) {
+  //         setTimeout(() => {
+  //             writeToCsvFile(Beacon_RSSi); // Retry after a delay
+  //         }, 1); // Adjust the delay as needed
+  //         return;
+  //     }
+  // } catch (error) {
+  //     console.error("Error checking lock file:", error);
+  //     return;
+  // }
+
+  // lockfile.lock(lockFilePath, { retries: 10, retryWait: 100, stale: 10 }, (lockErr) => {
+  //     if (lockErr) {
+  //         console.error("Error locking the file:", lockErr);
+  //         // You can retry or handle the error here
+  //     } else {
+  //         fs.writeFile(filePath, `${Beacon_RSSi}\n`, (err) => {
+  //             if (err) {
+  //                 console.error("Error writing to the file:", err);
+  //             } else {
+  //                 console.log("Data written to file successfully.");
+  //             }
+  //             lockfile.unlock(lockFilePath, (unlockErr) => {
+  //                 if (unlockErr) {
+  //                     console.error("Error unlocking the file:", unlockErr);
+  //                 }
+  //                 // Continue processing or exit the script as needed
+  //             });
+  //         });
+  //     }
+  // });
+  const sanitizedBeacon_RSSi = Beacon_RSSi.replace(/\x00/g, '').replace(/\x03/g, '');
+  fs.writeFile(filePath, `${sanitizedBeacon_RSSi}\n`, (err) => {
+    if (err) {
+        console.error("Error writing to the file:", err);
+    } else {
+        console.log("Data written to file successfully.");
+    }
+  });
+
+
+}
+
+
+
+
+
+function full(Array) {
+  for (let i = 0; i < Array.length ; i++) {
+    if (Array[i] == '0')
+      return false;
+  }
+  return true;
+}
+
 
 var count = 0;
-var fs = require('fs')
+
 var clientHandler = function (socket) {
   //客戶端傳送資料的時候觸發data事件
   socket.on('data', function dataHandler(data) {//data是客戶端傳送給伺服器的資料
-    //console.log(data);
+    //console.log("app.js", data);
     k = data.toString();
     //console.log(k)
-    if(!k.includes(",")){
-      console.log(k);
+    if(!k.includes(",")){ //分辨傳過來的是不是groundtruth座標
       buffer[6] = k;
+      console.log(buffer[6]);
     }
     else{
       var K = k.split(",", 2);
@@ -43,29 +100,29 @@ var clientHandler = function (socket) {
       let numStr = beacon_id.replace(/[^0-9]/ig, "");
       beacon_int = parseInt(numStr);
       Rssi_int = parseInt(Rssi);
-      //console.log(beacon_int,Rssi_int);
+      //console.log("app.js", beacon_int,Rssi_int);
       Rssi_int = (Rssi_int + 103) / (-48 + 103); //min-max normalization
       if (beacon_int == 7) {
         buffer[5] = Rssi_int;
       }//因為用1 2 3 4 5 7
       else
         buffer[beacon_int - 1] = Rssi_int;
-      // if(full(buffer)) //full 邏輯是buffer裡全部值都不是0才成立, 所以6個rssi值沒收滿前不會成立
-      if (true) {  
+      if(full(buffer)){ //full 邏輯是buffer裡全部值都不是0才成立, 所以6個rssi值沒收滿前不會成立
         Beacon_RSSi = `{q"Beacon_1q":q"${buffer[0]}q",q"Beacon_2q":q"${buffer[1]}q",q"Beacon_3q":q"${buffer[2]}q",q"Beacon_4q":q"${buffer[3]}q",q"Beacon_5q":q"${buffer[4]}q",q"Beacon_7q":q"${buffer[5]}q", q"Ground_truthq":q"${buffer[6]}q"}`;
-        console.log(Beacon_RSSi);
+        console.log("app.js", Beacon_RSSi)
+        writeToCsvFile(Beacon_RSSi)
         buffer = ['0', '0', '0', '0', '0', '0', '000']; //還原等收下一次值，第7個(buffer[6])是groundtruth position
         count++;
       }
     }
-    
     socket.write(toclient);
   });
 
   //當對方的連線斷開以後的事件
   socket.on('close', function () {
     socket.destroy(); 
-    console.log(socket.remoteAddress, socket.remotePort, 'disconnected');
+    //pythonProcess.stdin.end();
+    //console.log(socket.remoteAddress, socket.remotePort, 'disconnected'); 
   })
   socket.on('error', (err) => {
     console.log(err);
@@ -99,19 +156,25 @@ var realtime = '0';
 var particle_prev_count = 0;
 var data_date = '0';
 var prob = ['601', '601', '601', '601', '601', '601', '601', '601', '601', '601'];
-let pythonProcess = null;
+//let pythonProcess = null;
 const { spawn } = require('child_process');
 
 
 
 
+
+
+
+
 function startPythonProcess() { //執行control.py
+  processactivate = 1;
+  console.log('app.js start control.py');
   const pythonArgs = [type, realtime, Beacon_RSSi, particle_prev_count]; //抓argument的時候從1開始
   const pythonFile = '/home/mcs/troy2/control.py';
   if (pythonProcess) { //換type的時候要砍掉process重新執行
     pythonProcess.kill();
   }
-  pythonProcess = spawn('python', [pythonFile, ...pythonArgs]);
+  pythonProcess = spawn('python', ['-u', pythonFile, ...pythonArgs], { stdio: ['pipe', 'pipe', 'pipe'] });
   pythonProcess.stdout.on('data', (data) => {
     const output = data.toString().trim();
     console.log('Result: ', output);
@@ -159,9 +222,20 @@ function startPythonProcess() { //執行control.py
 }
 
 
+
+
+
+
+
 app2.get('/change_type', function (req, res) {
   type = req.query.value;
   fs.writeFile('./calculate_type.txt', type, function (error) {
+  })
+  startPythonProcess();
+})
+app2.get('/change_data_input', function (req, res) {
+  realtime = req.query.value;
+  fs.writeFile('./change_data_input.txt', realtime, function (error) {
   })
   startPythonProcess();
 })
@@ -220,6 +294,7 @@ function isJSONString(str) {
   return true;
 }
 var queue = [];
+processactivate = 0;
 
 
 
