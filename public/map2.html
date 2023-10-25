@@ -159,7 +159,7 @@
 
 
 
-        ///////////////New
+        ///////////////New 選simulation or realtime
         $("#chose_data_input").hover(function () {
             $("#choose_data").css("opacity", "1");
         }, function () {
@@ -227,6 +227,12 @@
                 //
             });
             $('#way').text('RSSI+Image');
+        });
+        $('#type4').click(function () {
+            $.get("/change_type", { type: "Heatmap", value: 3 }, function (response) {
+                //
+            });
+            $('#way').text('Heatmap');
         });
         $("#particle_weight").hover(function () {
             $("#choose_particle_weight").css("opacity", "1");
@@ -327,6 +333,7 @@
                             <li><a href='#' id="type1" class="header_select_sublist_option">純RSSI</a></li>
                             <li><a href='#' id="type2" class="header_select_sublist_option">純Image</a></li>
                             <li><a href='#' id="type3" class="header_select_sublist_option">Both</a></li>
+                            <li><a href='#' id="type4" class="header_select_sublist_option">Heatmap</a></li>
                         </ul>
                     </div>
 

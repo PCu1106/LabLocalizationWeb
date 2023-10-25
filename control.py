@@ -38,20 +38,21 @@ def read_locked_file():
 arguments = sys.argv  # argument[1]"哪種方法", argument[2]"模擬 or realtime", argument[3]"rssi值", argument[4]"粒子數" , argument[5]"粒子數"
 if(int(arguments[1])==0): # 用RSSI
     #print("control.py"+arguments[3])
-    command = ['python', './ANN.py', arguments[2], arguments[3], arguments[4]]
     rssi_history = arguments[3]
+    command = ['python', './ANN.py', arguments[2], arguments[3], arguments[4]]
     while True:
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, universal_newlines=True, bufsize=1)
-        # rssi = read_locked_file(input_csv_file, lock_file)
         rssi = read_locked_file()
-        if(rssi!=rssi_history):
-            command = ['python', './ANN.py', arguments[2], rssi, arguments[4]]
+        if(rssi_history != rssi and rssi is not None):
+            rssi_history = rssi   
+            #print("activate process " + str(rssi))
+            command = ['python', './ANN.py', arguments[2], rssi, arguments[4]] 
+            process = subprocess.Popen(command, stdout=subprocess.PIPE, universal_newlines=True, bufsize=1)
             output = process.stdout.readline()
-        else:
-            continue
-        if output == '' and process.poll() is not None: break 
-        if output: print(output.strip())
-        sys.stdout.flush()
+            if output == '' and process.poll() is not None: break 
+            if output: print(output.strip())
+            sys.stdout.flush()
+
+        
 
 
 elif(int(arguments[1])==1): # 用影像
@@ -79,15 +80,20 @@ elif(int(arguments[1])==1): # 用影像
 
 
 elif(int(arguments[1])==3): # 用ANN_contrast.py
+    rssi_history = arguments[3]
     command = ['python', './ANN_contrast.py', arguments[2], arguments[3], arguments[4]]
     while True:
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, universal_newlines=True, bufsize=1)
-        rssi = read_locked_file(input_csv_file, lock_file)
-        command = ['python', './ANN_contrast.py', arguments[2], rssi, arguments[4]]
-        output = process.stdout.readline()
-        if output == '' and process.poll() is not None: break 
-        if output: print(output.strip())
-        sys.stdout.flush()
+        rssi = read_locked_file()
+        if(rssi_history != rssi and rssi is not None):
+            rssi_history = rssi   
+            #print("activate process " + str(rssi))
+            command = ['python', './ANN_contrast.py', arguments[2], rssi, arguments[4]] 
+            process = subprocess.Popen(command, stdout=subprocess.PIPE, universal_newlines=True, bufsize=1)
+            output = process.stdout.readline()
+            if output == '' and process.poll() is not None: break 
+            if output: print(output.strip())
+            sys.stdout.flush()
+
 
 
 elif(False): # 用其他方法(待).......................................................................

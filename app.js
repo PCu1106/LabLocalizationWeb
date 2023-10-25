@@ -18,9 +18,9 @@ let pythonProcess = null;
 
 
 const fs = require('fs');
-const lockfile = require('lockfile'); //Synchronize control.py 和 app.js rssi_buffer.csv用
+//const lockfile = require('lockfile'); //Synchronize control.py 和 app.js rssi_buffer.csv用
 const filePath = 'rssi_buffer.csv';
-const lockFilePath = 'l.lock';
+//const lockFilePath = 'l.lock';
 
 function writeToCsvFile(Beacon_RSSi) {
   // // Check if the lock file already exists
@@ -168,7 +168,7 @@ const { spawn } = require('child_process');
 
 function startPythonProcess() { //執行control.py
   processactivate = 1;
-  console.log('app.js start control.py');
+  //console.log('app.js start control.py');
   const pythonArgs = [type, realtime, Beacon_RSSi, particle_prev_count]; //抓argument的時候從1開始
   const pythonFile = '/home/mcs/troy2/control.py';
   if (pythonProcess) { //換type的時候要砍掉process重新執行

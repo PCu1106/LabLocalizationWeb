@@ -24,11 +24,16 @@ import csv
 import pandas as pd
 import os
 import Wireless_Particle_Filter as PF
+
+
+
 position_label=['101','102','103','104','105','106','107','108','109','110','111',  '201','211','301','311','401','411','501','511', '601','602','603','604','605','606','607','608','609','610','611', '701','711','801','811','901','911','1001','1011',  '1101','1102','1103','1104','1105','1106','1107','1108','1109','1110','1111']
 
 
 arguments = sys.argv       # arguments[0] 好像被保留
+#if (False):
 if (int(arguments[1])==0): #選用模擬.................................................................................
+    print("troy2_ANN.py_simulation")
     new_model = tf.keras.models.load_model('X_model_0409.h5')
     y_pred=np.array([])
     csv_file_path = "/home/mcs/troy2/walk_data/wireless_training_1002.csv"
@@ -50,12 +55,18 @@ if (int(arguments[1])==0): #選用模擬........................................
             print(final_position)
             sys.stdout.flush()
             
+#elif(True): #測試用
 elif(int(arguments[1])==1): #選用realtime...............................................................................
-    # Wireless_Test = {'Beacon_1': 0.459016393, 'Beacon_2':0.557377049, 'Beacon_3': 0.344262295,
-    #              'Beacon_4':0.37704918, 'Beacon_5': 0.540983607,  'Beacon_7': 0.655737705, }
+    #print("troy2_ANN.py_realtime")
+    #Wireless_Test = {'Beacon_1': 0.459016393, 'Beacon_2':0.557377049, 'Beacon_3': 0.344262295,
+    #             'Beacon_4':0.37704918, 'Beacon_5': 0.540983607,  'Beacon_7': 0.655737705, }
     beacon_rssi=str(arguments[2])
-    Wireless_Test=beacon_rssi.replace("q","\"")
+    #print("troy2_ANN.py1"+beacon_rssi)
+    Wireless_Test=beacon_rssi.replace("q","")
+    print("troy2_ANN.py2"+Wireless_Test)
+    sys.stdout.flush()
     Wireless_Test=json.loads(Wireless_Test)
+    
 
     Wireless_RssiData = np.array([])
     for beacon_id, RSSI in Wireless_Test.items():
@@ -67,9 +78,9 @@ elif(int(arguments[1])==1): #選用realtime.....................................
     dict={}
     for i in range (len(y_pred[0])):
         dict[position_label[i]]=int(y_pred[0][i]*100)
-    count=int(arguments[4])
-    final_position=PF.calculate(dict,count)
-    print(final_position)
+    count=int(arguments[3])
+    final_position=PF.calculate(dict,30000) #測試用
+    #print(final_position)
 
 
 #y_pred_class = np.argmax(y_pred, axis=1)

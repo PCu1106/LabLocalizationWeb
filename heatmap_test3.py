@@ -11,7 +11,7 @@ def save_figure_to_html(fig, filename):
 def visualize_heatmap(value = 12, colorbar_title="colorbar", title=None, show=False):
     fig = go.Figure()
     map_image_path = "public/images/LABmap2.jpg"
-    csv_file_path = "position_history/history_4.csv"
+    csv_file_path = "position_history/history_3.csv"
     floor_plan_filename = Image.open(map_image_path)
     width_meter, height_meter = floor_plan_filename.size
     data = []
@@ -21,7 +21,7 @@ def visualize_heatmap(value = 12, colorbar_title="colorbar", title=None, show=Fa
         csv_reader = csv.reader(csv_file)
         next(csv_reader)  # Skip header row
         for row in csv_reader:
-            groundtruth, estimated, rssi1, rssi2, rssi3, rssi4, rssi5, rssi6 = map(int, row)
+            groundtruth, estimated, rssi1, rssi2, rssi3, rssi4, rssi5, rssi6 = map(float, row)
             data.append((int(groundtruth/100), int(groundtruth%100)))
 
 
